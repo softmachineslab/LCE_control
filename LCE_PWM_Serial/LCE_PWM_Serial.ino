@@ -8,6 +8,8 @@
 #define MAX_CC 255
 // better here than as an int
 #define SERIAL_RATE 115200
+// for strtok string conversoin
+#define BUFSIZE 200
 
 // pin setup and constants
 // will use two PWMs
@@ -20,6 +22,7 @@ float duty_rev = 0.0;
 int raw_duty = 0;
 // because compiler is annoying and sscanf can't do floats directly
 char *token;
+char received_raw[BUFSIZE];
 // for the BJT circuit
 bool switch_highlow = true;
 
@@ -52,9 +55,8 @@ void loop() {
     // presummably the user is smart enough to send the two floats...
     received = Serial.readString();
     // using strtok to parse manually
-//    token = strtok(received.c_str(), " ");
-    // for some reason, arduino C compiler complains about const conversions now... ' ' is a char, " " is a String.
-    token = strtok(received.c_str(), ' ');
+    received.toCharArray(received_raw, BUFSIZE);
+    token = strtok(received_raw, " ");
     if(token == NULL){
       Serial.println("Error! nothing sent!");
     }

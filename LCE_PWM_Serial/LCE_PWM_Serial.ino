@@ -20,6 +20,8 @@ float duty_rev = 0.0;
 int raw_duty = 0;
 // because compiler is annoying and sscanf can't do floats directly
 char *token;
+// for the BJT circuit
+bool switch_highlow = true;
 
 void setup() {
   Serial.begin(SERIAL_RATE);
@@ -31,8 +33,14 @@ void setup() {
   // ensure we start with all transistors off
   pinMode(fwd_pin, OUTPUT);
   pinMode(rev_pin, OUTPUT);
-  analogWrite(fwd_pin, 0);
-  analogWrite(rev_pin, 0);
+  if(switch_highlow){
+    analogWrite(fwd_pin, 1.0);
+    analogWrite(rev_pin, 1.0);
+  }
+  else{
+    analogWrite(fwd_pin, 0);
+    analogWrite(rev_pin, 0);
+  }
   // we'll also turn on the LED when any pin is set high
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
@@ -44,7 +52,9 @@ void loop() {
     // presummably the user is smart enough to send the two floats...
     received = Serial.readString();
     // using strtok to parse manually
-    token = strtok(received.c_str(), " ");
+//    token = strtok(received.c_str(), " ");
+    // for some reason, arduino C compiler complains about const conversions now... ' ' is a char, " " is a String.
+    token = strtok(received.c_str(), ' ');
     if(token == NULL){
       Serial.println("Error! nothing sent!");
     }
@@ -61,6 +71,9 @@ void loop() {
     Serial.println("Duty cycles read as:");
     Serial.println(duty_fwd);
     Serial.println(duty_rev);
+//    Serial.println("Duty cycles converted into CC values (out of 255):");
+//    Serial.println(convert_duty(duty_fwd));
+//    Serial.println(convert_duty(duty_rev));
 //    Serial.println(convert_duty(duty_fwd)); // debugging the convert function
     // actually set the PWM duty cycles
     analogWrite(fwd_pin, convert_duty(duty_fwd));
@@ -74,5 +87,7 @@ int convert_duty(float duty)
   // constrain between 0 and MAX_CC.
   raw_duty = (raw_duty < 0) ? 0 : raw_duty;
   raw_duty = (raw_duty > MAX_CC) ? MAX_CC : raw_duty;
+  // If we're using the inverting BJT circuit, duty cycle is "opposite."
+  raw_duty = 1.0 - raw_duty;
   return raw_duty;
 }

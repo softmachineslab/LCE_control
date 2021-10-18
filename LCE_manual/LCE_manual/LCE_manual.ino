@@ -9,6 +9,8 @@
 int status = 0;
 int fwd_pin = 3;
 int rev_pin = 5;
+// for the BJT circuit
+bool switch_highlow = true;
 
 void setup() {
   // Serial is the programming port on the Zero
@@ -22,8 +24,15 @@ void setup() {
   // ensure we start with all transistors off
   pinMode(fwd_pin, OUTPUT);
   pinMode(rev_pin, OUTPUT);
-  digitalWrite(fwd_pin, LOW);
-  digitalWrite(rev_pin, LOW);
+  if(switch_highlow){
+    digitalWrite(fwd_pin, HIGH);
+    digitalWrite(rev_pin, HIGH);
+  }
+  else{
+    digitalWrite(fwd_pin, LOW);
+    digitalWrite(rev_pin, LOW);
+  }
+
   // we'll also turn on the LED when any pin is set high
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
@@ -39,20 +48,38 @@ void loop() {
     switch(status){
       case 0:
         Serial.println("Status = 0, Off");
-        digitalWrite(fwd_pin, LOW);
-        digitalWrite(rev_pin, LOW);
+        if(switch_highlow){
+          digitalWrite(fwd_pin, HIGH);
+          digitalWrite(rev_pin, HIGH); 
+        }
+        else{
+          digitalWrite(fwd_pin, LOW);
+          digitalWrite(rev_pin, LOW); 
+        }
         digitalWrite(LED_BUILTIN, LOW);
         break;
       case 1:
         Serial.println("Status = 1, Forward");
-        digitalWrite(fwd_pin, HIGH);
-        digitalWrite(rev_pin, LOW);
+        if(switch_highlow){
+          digitalWrite(fwd_pin, LOW);
+          digitalWrite(rev_pin, HIGH);
+        }
+        else{
+          digitalWrite(fwd_pin, HIGH);
+          digitalWrite(rev_pin, LOW);
+        }
         digitalWrite(LED_BUILTIN, HIGH);
         break;
       case 2:
         Serial.println("Status = 2, Reverse");
-        digitalWrite(fwd_pin, LOW);
-        digitalWrite(rev_pin, HIGH);
+        if(switch_highlow){
+          digitalWrite(fwd_pin, HIGH);
+          digitalWrite(rev_pin, LOW);
+        }
+        else{
+          digitalWrite(fwd_pin, LOW);
+          digitalWrite(rev_pin, HIGH);
+        }
         digitalWrite(LED_BUILTIN, HIGH);
         break;
       default:

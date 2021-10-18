@@ -4,6 +4,8 @@
  * Andrew Sabelhaus and Mason Zadan
  */
 
+#define SERIAL_RATE 115200
+
 // pin setup and constants
 // switch between fwd, rev, off
 int status = 0;
@@ -14,8 +16,8 @@ bool switch_highlow = true;
 
 void setup() {
   // Serial is the programming port on the Zero
-  int serial_rate = 115200;
-  Serial.begin(serial_rate);
+//  int serial_rate = 115200;
+  Serial.begin(SERIAL_RATE);
   // Wait until the port is ready
   while (!Serial)
     ;

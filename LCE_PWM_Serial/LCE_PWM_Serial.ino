@@ -13,13 +13,14 @@
 
 // pin setup and constants
 // will use two PWMs
-int fwd_pin = 9;
-int rev_pin = 10;
+int fwd_pin = 3;
+int rev_pin = 5;
 // placeholders for what we'll read from the serial terminal
 String received;
 float duty_fwd = 0.0;
 float duty_rev = 0.0;
 int raw_duty = 0;
+float highlow_inv_duty = 0.0;
 // because compiler is annoying and sscanf can't do floats directly
 char *token;
 char received_raw[BUFSIZE];
@@ -36,14 +37,8 @@ void setup() {
   // ensure we start with all transistors off
   pinMode(fwd_pin, OUTPUT);
   pinMode(rev_pin, OUTPUT);
-  if(switch_highlow){
-    analogWrite(fwd_pin, 1.0);
-    analogWrite(rev_pin, 1.0);
-  }
-  else{
-    analogWrite(fwd_pin, 0);
-    analogWrite(rev_pin, 0);
-  }
+  analogWrite(fwd_pin, convert_duty(0.0));
+  analogWrite(rev_pin, convert_duty(0.0));
   // we'll also turn on the LED when any pin is set high
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
@@ -85,11 +80,14 @@ void loop() {
 
 int convert_duty(float duty)
 {
-  raw_duty = floor(duty * MAX_CC);
+  // If we're using the inverting BJT circuit, duty cycle is "opposite."
+  highlow_inv_duty = duty;
+  if(switch_highlow){
+    highlow_inv_duty = 1.0 - highlow_inv_duty;
+  }
+  raw_duty = floor(highlow_inv_duty * MAX_CC);
   // constrain between 0 and MAX_CC.
   raw_duty = (raw_duty < 0) ? 0 : raw_duty;
   raw_duty = (raw_duty > MAX_CC) ? MAX_CC : raw_duty;
-  // If we're using the inverting BJT circuit, duty cycle is "opposite."
-  raw_duty = 1.0 - raw_duty;
   return raw_duty;
 }
